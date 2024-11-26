@@ -5,6 +5,8 @@ AM_INIT_AUTOMAKE([foreign])
 # Check for a C compiler
 AC_PROG_CC
 
+CFLAGS="$CFLAGS -Os"
+
 AC_ARG_ENABLE([static],
     [AS_HELP_STRING([--enable-static], [Build static executable])],
     [],
