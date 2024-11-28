@@ -10,7 +10,7 @@ CFLAGS="$CFLAGS -Os"
 AC_ARG_ENABLE([static],
     [AS_HELP_STRING([--enable-static], [Build static executable])],
     [],
-    [enable_static=no]
+    [enable_static=yes]
 )
 
 # Use pkg-config to find libpq
