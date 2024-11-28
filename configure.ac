@@ -14,9 +14,9 @@ AC_ARG_ENABLE([static],
 )
 
 # Use pkg-config to find libpq
-PKG_CHECK_MODULES([LIBPQ], [libpq], [], [AC_MSG_ERROR([libpq not found!])])
+PKG_CHECK_MODULES_STATIC([LIBPQ], [libpq], [], [AC_MSG_ERROR([libpq not found!])])
 
-LDFLAGS="$LDFLAGS -static"
+LDFLAGS="$LDFLAGS -static -static-libgcc"
 
 
 # Define a standard Makefile
