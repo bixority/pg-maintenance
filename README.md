@@ -1,4 +1,4 @@
-# postgresql-maintenance
+# pg_maintenance
 PostgreSQL maintenance tool
 
-Requires: libpq-dev libkrb5-dev
+Deletes rows from PostgreSQL table that are older than N days.
