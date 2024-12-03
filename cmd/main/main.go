@@ -22,17 +22,17 @@ func main() {
 	// Parse CLI arguments
 	var table string
 	var timestampColumn string
-	var timestamp string
+	var days int
 	var batchSize int
 
 	flag.StringVar(&table, "table", "", "Table name for cleanup")
 	flag.StringVar(&timestampColumn, "timestampColumn", "created_at", "Name of the timestamp column")
-	flag.StringVar(&timestamp, "timestamp", "", "Delete rows older than this date (YYYY-MM-DD)")
+	flag.IntVar(&days, "days", 0, "Delete rows older than N days")
 	flag.IntVar(&batchSize, "batch", 0, "Optional batch size for cleanup")
 	flag.Parse()
 
-	if table == "" || timestamp == "" {
-		log.Fatalf("Both --table and --timestamp arguments are required")
+	if table == "" || days <= 0 {
+		log.Fatalf("Both --table and --days arguments are required")
 	}
 
 	// Validate table name (it must be alphanumeric or underscore)
@@ -57,37 +57,57 @@ func main() {
 		log.Fatalf("ERROR: Database ping failed: %v\n", err)
 	}
 
-	fmt.Println("Connected to the database successfully")
+	log.Println("Connected to the database successfully")
 
 	// Perform the deletion in batches if specified
 	for {
-		// Prepare the SQL query using parameterized query for timestamp
-		query := fmt.Sprintf(`DELETE FROM "%s" WHERE "%s" < $1`, table, timestampColumn)
-
-		if batchSize > 0 {
-			query += fmt.Sprintf(" LIMIT %d", batchSize)
-		}
-
-		// Execute the query with timestamp as the parameter
-		result, err := db.ExecContext(ctx, query, timestamp)
+		tx, err := db.BeginTx(ctx, nil)
 
 		if err != nil {
+			log.Fatalf("ERROR: Failed to begin transaction: %v\n", err)
+		}
+
+		query := fmt.Sprintf(
+			`DELETE FROM "%s" WHERE "%s" < NOW() - INTERVAL '%d days'`,
+			table,
+			timestampColumn,
+			days,
+		)
+
+		// TODO: implement batching, DELETE doesn't support LIMIT directly.
+		var args []interface{}
+		//if batchSize > 0 {
+		//	query += " LIMIT $2"
+		//	args = append(args, batchSize)
+		//}
+
+		log.Println(query)
+
+		// Execute the query with timestamp as the parameter
+		result, err := db.ExecContext(ctx, query, args...)
+
+		if err != nil {
+			_ = tx.Rollback()
 			log.Fatalf("ERROR: Failed to execute query: %v\n", err)
 		}
 
-		// Check how many rows were affected
 		rowsAffected, err := result.RowsAffected()
 
 		if err != nil {
+			_ = tx.Rollback()
 			log.Fatalf("ERROR: Failed to get rows affected: %v\n", err)
 		}
 
+		if err := tx.Commit(); err != nil {
+			log.Fatalf("ERROR: Failed to commit transaction: %v\n", err)
+		}
+
 		if rowsAffected == 0 {
-			fmt.Println("No more rows to delete. Exiting.")
+			log.Println("No more rows to delete. Exiting.")
 			break
 		}
 
-		fmt.Printf("Deleted %d rows\n", rowsAffected)
+		log.Printf("Deleted %d rows\n", rowsAffected)
 
 		// Exit early if batch mode is not enabled
 		if batchSize == 0 {
