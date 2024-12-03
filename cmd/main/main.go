@@ -65,6 +65,14 @@ func main() {
 
 	log.Println("Connected to the database successfully")
 
+	now := time.Now()
+	log.Printf("Cleaning up table %s by column %s for the last %d days with batch=%d\n",
+		table,
+		timestampColumn,
+		days,
+		batchSize,
+	)
+
 	for {
 		tx, err := db.BeginTx(ctx, nil)
 
@@ -73,14 +81,14 @@ func main() {
 		}
 
 		query := fmt.Sprintf(
-			`DELETE FROM "%s" WHERE "%s" < NOW() - INTERVAL '%d days'`,
+			`DELETE FROM "%s" WHERE "%s" BETWEEN (NOW() - INTERVAL '%d days') AND $1`,
 			table,
 			timestampColumn,
 			days,
 		)
 
 		// TODO: implement batching, DELETE doesn't support LIMIT directly.
-		var args []interface{}
+		var args = []interface{}{now}
 		//if batchSize > 0 {
 		//	query += " LIMIT $2"
 		//	args = append(args, batchSize)
