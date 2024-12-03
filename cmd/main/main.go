@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-	// Environment variable for DB connection string
 	dbDSN := os.Getenv("DB_DSN")
 	if dbDSN == "" {
 		log.Fatalf("Environment variable DB_DSN is required")
@@ -35,12 +34,10 @@ func main() {
 		log.Fatalf("Both --table and --days arguments are required")
 	}
 
-	// Validate table name (it must be alphanumeric or underscore)
 	if !isValidTableName(table) {
 		log.Fatalf("Invalid table name: %s", table)
 	}
 
-	// Open database connection (use connection pooling)
 	db, err := sql.Open("postgres", dbDSN)
 
 	if err != nil {
@@ -49,7 +46,6 @@ func main() {
 
 	defer db.Close()
 
-	// Ensure the database connection is valid
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -59,7 +55,6 @@ func main() {
 
 	log.Println("Connected to the database successfully")
 
-	// Perform the deletion in batches if specified
 	for {
 		tx, err := db.BeginTx(ctx, nil)
 
@@ -83,7 +78,6 @@ func main() {
 
 		log.Println(query)
 
-		// Execute the query with timestamp as the parameter
 		result, err := db.ExecContext(ctx, query, args...)
 
 		if err != nil {
@@ -109,14 +103,12 @@ func main() {
 
 		log.Printf("Deleted %d rows\n", rowsAffected)
 
-		// Exit early if batch mode is not enabled
 		if batchSize == 0 {
 			break
 		}
 	}
 }
 
-// isValidTableName checks if the table name contains only allowed characters (alphanumeric and underscore)
 func isValidTableName(name string) bool {
 	for _, r := range name {
 		if !(r >= 'A' && r <= 'Z') && !(r >= 'a' && r <= 'z') && !(r >= '0' && r <= '9') && r != '_' {
