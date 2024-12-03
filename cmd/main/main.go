@@ -13,31 +13,32 @@ import (
 )
 
 func main() {
+	now := time.Now()
 	dbDSN := os.Getenv("DB_DSN")
+
 	if dbDSN == "" {
-		log.Fatalf("Environment variable DB_DSN is required")
+		log.Fatal("Environment variable DB_DSN is required")
 	}
 
-	// Parse CLI arguments
 	var table string
 	var timestampColumn string
-	var days int
+	var days time.Duration
 	var batchSize int
 	var timeout time.Duration
 
 	flag.StringVar(&table, "table", "", "Table name for cleanup")
 	flag.StringVar(&timestampColumn, "timestampColumn", "created_at", "Name of the timestamp column")
-	flag.IntVar(&days, "days", 0, "Delete rows older than N days")
+	flag.DurationVar(&days, "days", 0, "Delete rows older than N days")
 	flag.IntVar(&batchSize, "batch", 0, "Optional batch size for cleanup")
 	flag.DurationVar(&timeout, "timeout", 60, "Single db operation timeout in seconds")
 	flag.Parse()
 
 	if table == "" || days <= 0 {
-		log.Fatalf("Both --table and --days arguments are required")
+		log.Fatalln("Both --table and --days arguments are required")
 	}
 
 	if !isValidTableName(table) {
-		log.Fatalf("Invalid table name: %s", table)
+		log.Fatalf("Invalid table name: %s\n", table)
 	}
 
 	db, err := sql.Open("postgres", dbDSN)
@@ -64,8 +65,6 @@ func main() {
 	}
 
 	log.Println("Connected to the database successfully")
-
-	now := time.Now()
 	log.Printf("Cleaning up table %s by column %s for the last %d days with batch=%d\n",
 		table,
 		timestampColumn,
@@ -81,20 +80,21 @@ func main() {
 		}
 
 		query := fmt.Sprintf(
-			`DELETE FROM "%s" WHERE "%s" BETWEEN (NOW() - INTERVAL '%d days') AND $1`,
+			`DELETE FROM "%s" WHERE "%s" < $1`,
 			table,
 			timestampColumn,
-			days,
 		)
 
+		// TODO: get a cutoff timestamp from now - days
+		var args = []interface{}{now - days}
+
 		// TODO: implement batching, DELETE doesn't support LIMIT directly.
-		var args = []interface{}{now}
 		//if batchSize > 0 {
 		//	query += " LIMIT $2"
 		//	args = append(args, batchSize)
 		//}
 
-		log.Println(query)
+		log.Println(query, args)
 
 		result, err := db.ExecContext(ctx, query, args...)
 
@@ -116,6 +116,7 @@ func main() {
 
 		if rowsAffected == 0 {
 			log.Println("No more rows to delete. Exiting.")
+
 			break
 		}
 
@@ -133,5 +134,6 @@ func isValidTableName(name string) bool {
 			return false
 		}
 	}
+
 	return true
 }
