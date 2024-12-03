@@ -23,11 +23,13 @@ func main() {
 	var timestampColumn string
 	var days int
 	var batchSize int
+	var timeout time.Duration
 
 	flag.StringVar(&table, "table", "", "Table name for cleanup")
 	flag.StringVar(&timestampColumn, "timestampColumn", "created_at", "Name of the timestamp column")
 	flag.IntVar(&days, "days", 0, "Delete rows older than N days")
 	flag.IntVar(&batchSize, "batch", 0, "Optional batch size for cleanup")
+	flag.DurationVar(&timeout, "timeout", 60, "Single db operation timeout in seconds")
 	flag.Parse()
 
 	if table == "" || days <= 0 {
@@ -46,8 +48,16 @@ func main() {
 
 	defer db.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
 	defer cancel()
+
+	// TODO: implement WithoutCancel, ctx isn't available outside the if-else scope
+	//if timeout > 0 {
+	//	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
+	//	defer cancel()
+	//} else {
+	//	ctx := context.WithoutCancel(context.Background())
+	//}
 
 	if err := db.PingContext(ctx); err != nil {
 		log.Fatalf("ERROR: Database ping failed: %v\n", err)
