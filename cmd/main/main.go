@@ -52,12 +52,8 @@ func main() {
 	var ctx context.Context
 	var cancel context.CancelFunc
 
-	if timeout > 0 {
-		ctx, cancel = context.WithTimeout(context.Background(), timeout*time.Second)
-		defer cancel()
-	} else {
-		ctx = context.WithoutCancel(context.Background())
-	}
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
 	if err := db.PingContext(ctx); err != nil {
 		log.Fatalf("ERROR: Database ping failed: %v\n", err)
@@ -72,6 +68,13 @@ func main() {
 	)
 
 	for {
+		if timeout > 0 {
+			ctx, cancel = context.WithTimeout(context.Background(), timeout*time.Second)
+		} else {
+			ctx = context.WithoutCancel(context.Background())
+			cancel = nil
+		}
+
 		tx, err := db.BeginTx(ctx, nil)
 
 		if err != nil {
@@ -111,6 +114,10 @@ func main() {
 
 		if err := tx.Commit(); err != nil {
 			log.Fatalf("ERROR: Failed to commit transaction: %v\n", err)
+		}
+
+		if cancel != nil {
+			cancel()
 		}
 
 		if rowsAffected == 0 {
