@@ -4,9 +4,9 @@ LABEL authors="bixority"
 WORKDIR /build
 ENV CGO_ENABLED=0
 
-COPY ./ /build/
+RUN apt update && apt install -y upx-ucl && make
 
-RUN make
+COPY ./ /build/
 
 FROM scratch
 LABEL authors="bixority"
