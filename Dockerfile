@@ -15,10 +15,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends xz-utils && \
   cp /tmp/upx-${upx_version}-${TARGETARCH}_linux/upx /usr/local/bin/ && \
   chmod +x /usr/local/bin/upx && \
   apt-get remove -y xz-utils && \
-  rm -rf /var/lib/apt/lists/* && \
-  make
+  rm -rf /var/lib/apt/lists/*
 
 COPY ./ /build/
+RUN make release
 
 FROM scratch
 LABEL authors="bixority"
