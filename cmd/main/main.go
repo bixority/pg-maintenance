@@ -22,13 +22,13 @@ func main() {
 
 	var table string
 	var timestampColumn string
-	var days time.Duration
+	var days int
 	var batchSize int
 	var timeout time.Duration
 
 	flag.StringVar(&table, "table", "", "Table name for cleanup")
 	flag.StringVar(&timestampColumn, "timestampColumn", "created_at", "Name of the timestamp column")
-	flag.DurationVar(&days, "days", 0, "Delete rows older than N days")
+	flag.IntVar(&days, "days", 0, "Delete rows older than N days")
 	flag.IntVar(&batchSize, "batch", 0, "Optional batch size for cleanup")
 	flag.DurationVar(&timeout, "timeout", 60, "Single db operation timeout in seconds")
 	flag.Parse()
@@ -49,16 +49,15 @@ func main() {
 
 	defer db.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
-	defer cancel()
+	var ctx context.Context
+	var cancel context.CancelFunc
 
-	// TODO: implement WithoutCancel, ctx isn't available outside the if-else scope
-	//if timeout > 0 {
-	//	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
-	//	defer cancel()
-	//} else {
-	//	ctx := context.WithoutCancel(context.Background())
-	//}
+	if timeout > 0 {
+		ctx, cancel = context.WithTimeout(context.Background(), timeout*time.Second)
+		defer cancel()
+	} else {
+		ctx = context.WithoutCancel(context.Background())
+	}
 
 	if err := db.PingContext(ctx); err != nil {
 		log.Fatalf("ERROR: Database ping failed: %v\n", err)
@@ -79,20 +78,20 @@ func main() {
 			log.Fatalf("ERROR: Failed to begin transaction: %v\n", err)
 		}
 
-		query := fmt.Sprintf(
-			`DELETE FROM "%s" WHERE "%s" < $1`,
+		args := []interface{}{now.AddDate(0, 0, -days)}
+		subquery := fmt.Sprintf(
+			`SELECT id FROM %s WHERE %s < $1 ORDER BY %s`,
 			table,
+			timestampColumn,
 			timestampColumn,
 		)
 
-		// TODO: get a cutoff timestamp from now - days
-		var args = []interface{}{now - days}
+		if batchSize > 0 {
+			subquery += " LIMIT $2"
+			args = append(args, batchSize)
+		}
 
-		// TODO: implement batching, DELETE doesn't support LIMIT directly.
-		//if batchSize > 0 {
-		//	query += " LIMIT $2"
-		//	args = append(args, batchSize)
-		//}
+		query := fmt.Sprintf(`DELETE FROM %s WHERE id IN (%s);`, table, subquery)
 
 		log.Println(query, args)
 
