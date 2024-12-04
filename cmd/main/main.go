@@ -64,7 +64,7 @@ func main() {
 	}
 
 	log.Println("Connected to the database successfully")
-	log.Printf("Cleaning up table %s by column %s for the last %d days with batch=%d\n",
+	log.Printf("Cleaning up table %s by column %s for the records older than %d days with batch=%d\n",
 		table,
 		timestampColumn,
 		days,
