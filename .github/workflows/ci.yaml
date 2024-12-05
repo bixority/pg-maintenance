@@ -30,7 +30,7 @@ jobs:
         id: set-outputs
         run: |
           echo 'image=ghcr.io/${{ steps.repository.outputs.lowercase }}' >> "${GITHUB_OUTPUT}"
-          # Only enable push on push events or pull requests coming from the same repository, except from dependabot
+          # Only enable push on release event with action 'published'
           echo 'push=${{ github.event_name == 'release' && github.event.action == 'published' }}' >> "${GITHUB_OUTPUT}"
 
       - name: Get short SHA
@@ -56,12 +56,14 @@ jobs:
             ${{ steps.set-outputs.outputs.image }}
           tags: |
             type=raw,value=${{ steps.extract_tag.outputs.tag }}
+
     outputs:
       image: ${{ steps.set-outputs.outputs.image }}
       push: ${{ steps.set-outputs.outputs.push }}
       meta-version: ${{ steps.meta.outputs.version }}
       meta-labels: ${{ steps.meta.outputs.labels }}
       meta-json: ${{ steps.meta.outputs.json }}
+      tag: ${{ steps.extract_tag.outputs.tag }}  # Save the extracted tag name to outputs
 
   build:
     needs:
@@ -192,6 +194,14 @@ jobs:
         run: |
           docker buildx imagetools create $(jq -r '"-t " + (.tags | join(" -t "))' <<< '${{ needs.prepare.outputs.meta-json }}') \
             $(printf '${{ needs.prepare.outputs.image }}@sha256:%s ' *)
+
+      - name: Make Docker Image Public
+        run: |
+          curl -X PATCH \
+          -H "Authorization: token ${{ secrets.GHCR_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          -d '{"visibility":"public"}' \
+          "https://api.github.com/user/packages/container/${{ needs.prepare.outputs.image }}/versions/${{ steps.build.outputs.digest }}/visibility"
 
       - name: Inspect image
         if: needs.prepare.outputs.push == 'true'
