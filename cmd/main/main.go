@@ -10,6 +10,8 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+
+	"github.com/bixority/pg_maintenance/internal/module/pg"
 )
 
 func main() {
@@ -57,7 +59,7 @@ func main() {
 		dbPassword,
 	)
 
-	if !isValidTableName(table) {
+	if !pg.IsValidTableName(table) {
 		log.Fatalf("Invalid table name: %s\n", table)
 	}
 
@@ -80,12 +82,32 @@ func main() {
 	}
 
 	log.Println("Connected to the database successfully")
+
 	log.Printf("Cleaning up table %s by column %s for the records older than %d days with batch=%d\n",
 		table,
 		timestampColumn,
 		days,
 		batchSize,
 	)
+
+	args := []interface{}{now.AddDate(0, 0, -days)}
+
+	if batchSize > 0 {
+		args = append(args, batchSize)
+	}
+
+	subquery := fmt.Sprintf(
+		`SELECT ctid FROM %s WHERE %s < $1 ORDER BY %s`,
+		table,
+		timestampColumn,
+		timestampColumn,
+	)
+
+	if batchSize > 0 {
+		subquery += " LIMIT $2"
+	}
+
+	query := fmt.Sprintf(`DELETE FROM %s WHERE ctid IN (%s);`, table, subquery)
 
 	for {
 		if timeout > 0 {
@@ -100,21 +122,6 @@ func main() {
 		if err != nil {
 			log.Fatalf("ERROR: Failed to begin transaction: %v\n", err)
 		}
-
-		args := []interface{}{now.AddDate(0, 0, -days)}
-		subquery := fmt.Sprintf(
-			`SELECT id FROM %s WHERE %s < $1 ORDER BY %s`,
-			table,
-			timestampColumn,
-			timestampColumn,
-		)
-
-		if batchSize > 0 {
-			subquery += " LIMIT $2"
-			args = append(args, batchSize)
-		}
-
-		query := fmt.Sprintf(`DELETE FROM %s WHERE id IN (%s);`, table, subquery)
 
 		log.Println(query, args)
 
@@ -152,14 +159,4 @@ func main() {
 			break
 		}
 	}
-}
-
-func isValidTableName(name string) bool {
-	for _, r := range name {
-		if !(r >= 'A' && r <= 'Z') && !(r >= 'a' && r <= 'z') && !(r >= '0' && r <= '9') && r != '_' {
-			return false
-		}
-	}
-
-	return true
 }
