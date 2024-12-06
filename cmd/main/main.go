@@ -89,7 +89,7 @@ func main() {
 
 	for {
 		if timeout > 0 {
-			ctx, cancel = context.WithTimeout(context.Background(), timeout*time.Second)
+			ctx, cancel = context.WithTimeout(context.Background(), timeout)
 		} else {
 			ctx = context.WithoutCancel(context.Background())
 			cancel = nil
