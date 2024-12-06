@@ -14,9 +14,13 @@ pg-maintenance --table dev --days 365 --batch 100 --timeout 0
 
 ### Arguments
 `--table`: table name for cleanup
+
 `--timestampColumn`: Name of the timestamp column (default: `created_at`)
+
 `--days`: Delete rows older than N days (default: `0`)
+
 `--batch`: Optional batch size for cleanup (default: `0`)
+
 `--timeout`: Single db operation timeout in seconds (default: `60`)
 
 
