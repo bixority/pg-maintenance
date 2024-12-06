@@ -13,6 +13,7 @@ pg-maintenance --table dev --days 365 --batch 100 --timeout 0
 ```
 
 ### Arguments
+
 `--table`: table name for cleanup
 
 `--timestampColumn`: Name of the timestamp column (default: `created_at`)
