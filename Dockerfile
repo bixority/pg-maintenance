@@ -20,9 +20,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends xz-utils && \
 COPY ./ /build/
 RUN make release
 
-FROM scratch
+FROM gcr.io/distroless/static:nonroot
 LABEL authors="bixority"
 
+WORKDIR /
 COPY --from=build-image /build/bin/pg_maintenance /build/LICENSE /
+
+USER nonroot:nonroot
 
 CMD ["/pg_maintenance"]
