@@ -14,18 +14,29 @@ import (
 
 func main() {
 	now := time.Now()
-	dbDSN := os.Getenv("DB_DSN")
+	dbUsername := os.Getenv("DB_USERNAME")
+	dbPassword := os.Getenv("DB_PASSWORD")
 
-	if dbDSN == "" {
-		log.Fatal("Environment variable DB_DSN is required")
+	if dbUsername == "" {
+		log.Fatal("Environment variable DB_USERNAME is required")
 	}
 
+	if dbPassword == "" {
+		log.Fatal("Environment variable DB_PASSWORD is required")
+	}
+
+	var host string
+	var port int
+	var dbName string
 	var table string
 	var timestampColumn string
 	var days int
 	var batchSize int
 	var timeout time.Duration
 
+	flag.StringVar(&host, "host", "localhost", "Database host")
+	flag.IntVar(&port, "port", 5432, "Database port")
+	flag.StringVar(&dbName, "dbname", "", "Database name")
 	flag.StringVar(&table, "table", "", "Table name for cleanup")
 	flag.StringVar(&timestampColumn, "timestampColumn", "created_at", "Name of the timestamp column")
 	flag.IntVar(&days, "days", 0, "Delete rows older than N days")
@@ -33,9 +44,18 @@ func main() {
 	flag.DurationVar(&timeout, "timeout", 60, "Single db operation timeout in seconds")
 	flag.Parse()
 
-	if table == "" || days <= 0 {
-		log.Fatalln("Both --table and --days arguments are required")
+	if dbName == "" || table == "" || days <= 0 {
+		log.Fatalln("All --dbname, --table and --days arguments are required")
 	}
+
+	var dbDSN = fmt.Sprintf(
+		`host=%s port=%d dbname=%s user=%s password=%s`,
+		host,
+		port,
+		dbName,
+		dbUsername,
+		dbPassword,
+	)
 
 	if !isValidTableName(table) {
 		log.Fatalf("Invalid table name: %s\n", table)

@@ -8,11 +8,18 @@ Deletes rows from PostgreSQL table that are older than N days.
 
 ## Plain binary run
 ```shell
-export DB_DSN="host=localhost port=5432 user=dev password=dev dbname=dev"
+export DB_USERNAME="dev"
+export DB_PASSWORD="dev"
 pg-maintenance --table dev --days 365 --batch 100 --timeout 0
 ```
 
 ### Arguments
+
+`--host`: Database host
+
+`--port`: Database port
+
+`--dbname`: Database name
 
 `--table`: table name for cleanup
 
@@ -27,8 +34,9 @@ pg-maintenance --table dev --days 365 --batch 100 --timeout 0
 
 ## Container run
 ```shell
-podman run --network host -e DB_DSN="host=localhost port=5432 user=dev password=dev dbname=dev" \
-       ghcr.io/bixority/pg-maintenance:0.0.1 /pg_maintenance --table dev --days 10 --batch 100 --timeout 0
+podman run --network host -e DB_USERNAME="dev" -e DB_PASSWORD="dev" \
+       ghcr.io/bixority/pg-maintenance:0.0.1 /pg_maintenance --host localhost --port 5432 --dbname dev \
+       --table dev --days 10 --batch 100 --timeout 0
 ```
 
 
