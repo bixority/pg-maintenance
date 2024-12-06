@@ -41,7 +41,7 @@ services:
       "--table", "dev",
       "--days", "10",
       "--batch", "100",
-      "--timeout", "0"
+      "--timeout", "0s"
     ]
     depends_on:
       - db

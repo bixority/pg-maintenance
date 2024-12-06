@@ -41,7 +41,7 @@ func main() {
 	flag.StringVar(&timestampColumn, "timestampColumn", "created_at", "Name of the timestamp column")
 	flag.IntVar(&days, "days", 0, "Delete rows older than N days")
 	flag.IntVar(&batchSize, "batch", 0, "Optional batch size for cleanup")
-	flag.DurationVar(&timeout, "timeout", 60, "Single db operation timeout in seconds")
+	flag.DurationVar(&timeout, "timeout", 60*time.Second, "Single db operation timeout in seconds")
 	flag.Parse()
 
 	if dbName == "" || table == "" || days <= 0 {
