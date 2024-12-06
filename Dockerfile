@@ -21,7 +21,10 @@ COPY ./ /build/
 RUN make release
 
 FROM gcr.io/distroless/static:nonroot
+
+LABEL org.opencontainers.image.description="PostgreSQL maintenance tool"
 LABEL authors="bixority"
+
 
 WORKDIR /
 COPY --from=build-image /build/bin/pg_maintenance /build/LICENSE /

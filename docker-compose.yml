@@ -32,5 +32,6 @@ services:
     container_name: pg-maintenance
     environment:
       DB_DSN: "host=${POSTGRES_HOST:-db} port=${POSTGRES_PORT:-5432} sslmode=${POSTGRES_SSL_MODE:-disable} user=${POSTGRES_USER:-dev} password=${POSTGRES_PASSWORD:-dev} dbname=${POSTGRES_DB:-dev}"
+    command: ["/pg_maintenance", "--table", "dev", "--days", "10", "--batch", "100", "--timeout", "0"]
     depends_on:
       - db
