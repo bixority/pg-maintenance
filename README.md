@@ -22,6 +22,6 @@ pg-maintenance --table dev --days 365 --batch 100 --timeout 0
 
 ## Container run
 ```shell
-docker run --network host -e DB_DSN="host=localhost port=5432 user=dev password=dev dbname=dev" \
+podman run --network host -e DB_DSN="host=localhost port=5432 user=dev password=dev dbname=dev" \
        ghcr.io/bixority/pg-maintenance:0.0.1 /pg_maintenance --table dev --days 10 --batch 100 --timeout 0
 ```
