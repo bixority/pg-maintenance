@@ -1,4 +1,4 @@
-FROM golang:1.23.2 AS build-image
+FROM golang:1.23.4 AS build-image
 LABEL authors="bixority"
 
 ARG upx_version=4.2.4
@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends xz-utils && \
 COPY ./ /build/
 RUN make release
 
-FROM gcr.io/distroless/static:nonroot
+FROM gcr.io/distroless/static-debian12:nonroot
 
 LABEL org.opencontainers.image.description="PostgreSQL maintenance tool"
 LABEL authors="bixority"
