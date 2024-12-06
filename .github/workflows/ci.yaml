@@ -8,10 +8,6 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform: [linux/amd64, linux/arm64]  # Define the matrix for platforms.
-
     permissions:
       contents: read
       packages: write  # Required to push images to GHCR.
@@ -35,12 +31,12 @@ jobs:
           docker buildx create --use --name mybuilder
           docker buildx inspect --bootstrap
 
-      - name: Build and Push Image for ${{ matrix.platform }}
+      - name: Build and Push Multi-Platform Image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
-          platforms: ${{ matrix.platform }}
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ github.event.release.tag_name }}
