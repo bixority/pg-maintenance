@@ -30,3 +30,20 @@ pg-maintenance --table dev --days 365 --batch 100 --timeout 0
 podman run --network host -e DB_DSN="host=localhost port=5432 user=dev password=dev dbname=dev" \
        ghcr.io/bixority/pg-maintenance:0.0.1 /pg_maintenance --table dev --days 10 --batch 100 --timeout 0
 ```
+
+
+## Test case
+
+You can create a following table with data for the last 5 years:
+
+```postgresql
+CREATE TABLE dev (id BIGSERIAL, created_at TIMESTAMP WITH TIME ZONE);
+
+INSERT INTO dev (created_at)
+SELECT 
+    NOW() - INTERVAL '5 years' + (INTERVAL '5 years' * (i / 100000000.0))
+FROM 
+    generate_series(1, 100000000) AS g(i);
+
+CREATE INDEX ON dev (created_at);
+```
