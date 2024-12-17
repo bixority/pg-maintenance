@@ -18,7 +18,8 @@ build:
 
 # Compress the binary with UPX
 compress: build
-	upx --best --lzma $(OUTPUT)
+	strip $(OUTPUT)
+	upx --brute $(OUTPUT)
 
 # Build and compress for release
 release: build compress
