@@ -19,6 +19,8 @@ pg-maintenance --table dev:created_at:365 --table dev2 --batch 100 --timeout 0s
 
 `--port`: Database port
 
+`--sslMode`: SSL mode (default: require)
+
 `--dbName`: Database name
 
 `--table`: table(s) name for cleanup in a format "tableName\[:timestampColumn=created_at\[:days=0\]\]"
@@ -31,8 +33,9 @@ pg-maintenance --table dev:created_at:365 --table dev2 --batch 100 --timeout 0s
 ## Container run
 ```shell
 podman run --network host -e DB_USERNAME="dev" -e DB_PASSWORD="dev" \
-       ghcr.io/bixority/pg-maintenance:0.0.1 /pg_maintenance --host localhost --port 5432 --dbname dev \
-       --table dev:created_at:365 --table dev2 --batch 100 --timeout 0s
+       ghcr.io/bixority/pg-maintenance:0.0.1 /pg_maintenance --host localhost --port 5432 \
+       --sslMode disable --dbName dev --table dev:created_at:365 --table dev2 --batch 100 \
+       --timeout 0s
 ```
 
 
