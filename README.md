@@ -21,7 +21,7 @@ pg-maintenance --table dev:created_at:365 --table dev2 --batch 100 --timeout 0s
 
 `--dbname`: Database name
 
-`--table`: table(s) name for cleanup in a format "tableName:timestampColumn\[:days\]"
+`--table`: table(s) name for cleanup in a format "tableName\[:timestampColumn=created_at\[:days=0\]\]"
 
 `--batch`: Optional batch size for cleanup (default: `0`)
 
