@@ -10,7 +10,7 @@ Deletes rows from PostgreSQL table that are older than N days.
 ```shell
 export DB_USERNAME="dev"
 export DB_PASSWORD="dev"
-pg-maintenance --table dev --days 365 --batch 100 --timeout 0s
+pg-maintenance --table dev:created_at:365 --table dev2:created_at --batch 100 --timeout 0s
 ```
 
 ### Arguments
@@ -21,11 +21,7 @@ pg-maintenance --table dev --days 365 --batch 100 --timeout 0s
 
 `--dbname`: Database name
 
-`--table`: table name for cleanup
-
-`--timestampColumn`: Name of the timestamp column (default: `created_at`)
-
-`--days`: Delete rows older than N days (default: `0`)
+`--table`: table(s) name for cleanup in a format "tableName:timestampColumn\[:days\]"
 
 `--batch`: Optional batch size for cleanup (default: `0`)
 
