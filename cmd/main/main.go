@@ -106,20 +106,12 @@ func main() {
 	log.Println("Connected to the database successfully")
 
 	for _, table := range tables {
-		log.Println(table)
-
 		parts := strings.Split(table, ":")
 		partCnt := len(parts)
 
 		if partCnt < 1 || partCnt > 3 {
 			log.Println("Invalid format: ", parts)
 			continue
-		}
-
-		for i, part := range parts {
-			if part == "" {
-				log.Fatalf("Invalid part %d format: %s\n", i, part)
-			}
 		}
 
 		tableName = parts[0]
