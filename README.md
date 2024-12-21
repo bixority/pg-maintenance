@@ -10,7 +10,8 @@ Deletes rows from PostgreSQL table that are older than N days.
 ```shell
 export DB_USERNAME="dev"
 export DB_PASSWORD="dev"
-pg-maintenance --table dev:created_at:365 --table dev2 --batch 100 --timeout 0s
+pg-maintenance --host localhost --port 5432 --sslMode disable \
+--table dev:created_at:365 --table dev2 --batch 100 --timeout 0s
 ```
 
 ### Arguments
