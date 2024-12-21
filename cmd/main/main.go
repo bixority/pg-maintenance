@@ -13,7 +13,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/bixority/pg_maintenance/internal/module/pg"
+	"github.com/bixority/pg-maintenance/internal/module/pg"
 )
 
 type arrayFlags []string
@@ -57,14 +57,14 @@ func main() {
 	flag.StringVar(&host, "host", "localhost", "Database host")
 	flag.IntVar(&port, "port", 5432, "Database port")
 	flag.StringVar(&sslMode, "sslMode", "require", "SSL mode")
-	flag.StringVar(&dbName, "dbname", "", "Database name")
+	flag.StringVar(&dbName, "dbName", "", "Database name")
 	flag.Var(&tables, "table", "Table(s) in a table:[timestampColumn=created_at[:days=0]] format.")
 	flag.IntVar(&batchSize, "batch", 0, "Optional batch size for cleanup")
 	flag.DurationVar(&timeout, "timeout", 60*time.Second, "Single db operation timeout in seconds")
 	flag.Parse()
 
 	if dbName == "" || len(tables) == 0 {
-		log.Fatalln("All --dbname and --table arguments are required")
+		log.Fatalln("All --dbName and --table arguments are required")
 	}
 
 	if sslMode != "require" && sslMode != "disable" && sslMode != "verify-full" && sslMode != "verify-cy" {

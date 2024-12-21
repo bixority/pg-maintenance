@@ -1,4 +1,4 @@
-module github.com/bixority/pg_maintenance
+module github.com/bixority/pg-maintenance
 
 go 1.23.4
 
