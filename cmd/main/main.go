@@ -58,7 +58,7 @@ func main() {
 	flag.IntVar(&port, "port", 5432, "Database port")
 	flag.StringVar(&sslMode, "sslMode", "require", "SSL mode")
 	flag.StringVar(&dbName, "dbname", "", "Database name")
-	flag.Var(&tables, "table", "Table(s) in a table:timestampColumn[:days=0] format.")
+	flag.Var(&tables, "table", "Table(s) in a table:[timestampColumn=created_at[:days=0]] format.")
 	flag.IntVar(&batchSize, "batch", 0, "Optional batch size for cleanup")
 	flag.DurationVar(&timeout, "timeout", 60*time.Second, "Single db operation timeout in seconds")
 	flag.Parse()
@@ -70,7 +70,7 @@ func main() {
 	if sslMode != "require" && sslMode != "disable" && sslMode != "verify-full" && sslMode != "verify-cy" {
 		log.Fatalf(
 			"Unsupported sslMode %s, \"require\" (default), "+
-				"\"verify-full\", \"verify-ca\", and \"disable\" supported",
+				"\"verify-full\", \"verify-ca\", and \"disable\" supported\n",
 			sslMode,
 		)
 	}
@@ -118,18 +118,26 @@ func main() {
 
 		for i, part := range parts {
 			if part == "" {
-				log.Fatalf("Invalid part %d format: %s", i, part)
+				log.Fatalf("Invalid part %d format: %s\n", i, part)
 			}
 		}
 
 		tableName = parts[0]
 
-		if !pg.IsValidTableName(tableName) {
+		if !pg.IsValidTName(tableName) {
 			log.Fatalf("Invalid table name: %s\n", table)
 		}
 
 		if partCnt > 1 {
 			timestampColumn = parts[1]
+
+			if timestampColumn == "" {
+				timestampColumn = "created_at"
+			} else {
+				if !pg.IsValidTName(timestampColumn) {
+					log.Fatalf("Invalid timestamp column name: %s\n", table)
+				}
+			}
 
 			if partCnt > 2 {
 				days, err = strconv.Atoi(parts[2])
@@ -140,6 +148,8 @@ func main() {
 			} else {
 				days = 0
 			}
+		} else {
+			timestampColumn = "created_at"
 		}
 
 		log.Printf("Cleaning up table %s by column %s for the records older than %d days with batch=%d\n",

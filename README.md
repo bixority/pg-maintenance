@@ -10,7 +10,7 @@ Deletes rows from PostgreSQL table that are older than N days.
 ```shell
 export DB_USERNAME="dev"
 export DB_PASSWORD="dev"
-pg-maintenance --table dev:created_at:365 --table dev2:created_at --batch 100 --timeout 0s
+pg-maintenance --table dev:created_at:365 --table dev2 --batch 100 --timeout 0s
 ```
 
 ### Arguments
@@ -32,7 +32,7 @@ pg-maintenance --table dev:created_at:365 --table dev2:created_at --batch 100 --
 ```shell
 podman run --network host -e DB_USERNAME="dev" -e DB_PASSWORD="dev" \
        ghcr.io/bixority/pg-maintenance:0.0.1 /pg_maintenance --host localhost --port 5432 --dbname dev \
-       --table dev:created_at:10 --batch 100 --timeout 0s
+       --table dev:created_at:365 --table dev2 --batch 100 --timeout 0s
 ```
 
 
