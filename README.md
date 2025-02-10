@@ -34,7 +34,7 @@ pg-maintenance --host localhost --port 5432 --sslMode disable \
 ## Container run
 ```shell
 podman run --network host -e DB_USERNAME="dev" -e DB_PASSWORD="dev" \
-       ghcr.io/bixority/pg-maintenance:0.0.1 /pg_maintenance --host localhost --port 5432 \
+       ghcr.io/bixority/pg-maintenance:0.0.1 /pg-maintenance --host localhost --port 5432 \
        --sslMode disable --dbName dev --table dev:created_at:365 --table dev2 --batch 100 \
        --timeout 0s
 ```
