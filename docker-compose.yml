@@ -34,7 +34,7 @@ services:
       DB_USERNAME: "${POSTGRES_USER:-dev}"
       DB_PASSWORD: "${POSTGRES_PASSWORD:-dev}"
     command: [
-      "/pg-maintenance",
+      "/pg_maintenance",
       "--host", "${POSTGRES_HOST:-db}",
       "--port", "${POSTGRES_PORT:-5432}",
       "--dbName", "${POSTGRES_DB:-dev}",
