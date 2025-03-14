@@ -1,7 +1,7 @@
-FROM golang:1.23.4 AS build-image
+FROM golang:1.24.1 AS build-image
 LABEL authors="bixority"
 
-ARG upx_version=4.2.4
+ARG upx_version=5.0.0
 ARG GOPROXY
 ARG TARGETARCH=${TARGETARCH:-amd64}
 

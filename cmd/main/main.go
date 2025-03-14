@@ -2,16 +2,16 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"flag"
 	"fmt"
+	"github.com/jackc/pgx/v5"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5"
 
 	"github.com/bixority/pg-maintenance/internal/module/pg"
 )
@@ -85,13 +85,13 @@ func main() {
 		sslMode,
 	)
 
-	db, err := sql.Open("postgres", dbDSN)
+	conn, err := pgx.Connect(context.Background(), dbDSN)
 
 	if err != nil {
 		log.Fatalf("ERROR: Failed to connect to database: %v\n", err)
 	}
 
-	defer db.Close()
+	defer conn.Close(context.Background())
 
 	var ctx context.Context
 	var cancel context.CancelFunc
@@ -99,7 +99,7 @@ func main() {
 	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := db.PingContext(ctx); err != nil {
+	if err := conn.Ping(ctx); err != nil {
 		log.Fatalf("ERROR: Database ping failed: %v\n", err)
 	}
 
@@ -178,7 +178,7 @@ func main() {
 				cancel = nil
 			}
 
-			tx, err := db.BeginTx(ctx, nil)
+			tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
 
 			if err != nil {
 				log.Fatalf("ERROR: Failed to begin transaction: %v\n", err)
@@ -186,21 +186,16 @@ func main() {
 
 			log.Println(query, args)
 
-			result, err := db.ExecContext(ctx, query, args...)
+			result, err := conn.Exec(ctx, query, args...)
 
 			if err != nil {
-				_ = tx.Rollback()
+				_ = tx.Rollback(ctx)
 				log.Fatalf("ERROR: Failed to execute query: %v\n", err)
 			}
 
-			rowsAffected, err := result.RowsAffected()
+			rowsAffected := result.RowsAffected()
 
-			if err != nil {
-				_ = tx.Rollback()
-				log.Fatalf("ERROR: Failed to get rows affected: %v\n", err)
-			}
-
-			if err := tx.Commit(); err != nil {
+			if err := tx.Commit(ctx); err != nil {
 				log.Fatalf("ERROR: Failed to commit transaction: %v\n", err)
 			}
 
