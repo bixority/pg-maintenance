@@ -91,7 +91,13 @@ func main() {
 		log.Fatalf("ERROR: Failed to connect to database: %v\n", err)
 	}
 
-	defer conn.Close(context.Background())
+	defer func(conn *pgx.Conn, ctx context.Context) {
+		err := conn.Close(ctx)
+
+		if err != nil {
+			log.Fatalf("Failed to close database connection")
+		}
+	}(conn, context.Background())
 
 	var ctx context.Context
 	var cancel context.CancelFunc
