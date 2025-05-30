@@ -1,8 +1,8 @@
 module github.com/bixority/pg-maintenance
 
-go 1.24.2
+go 1.24.3
 
-require github.com/jackc/pgx/v5 v5.7.4
+require github.com/jackc/pgx/v5 v5.7.5
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
