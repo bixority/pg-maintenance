@@ -1,4 +1,4 @@
-FROM golang:1.24.5 AS build-image
+FROM golang:1.25.1 AS build-image
 LABEL authors="bixority"
 
 ARG upx_version=5.0.2
