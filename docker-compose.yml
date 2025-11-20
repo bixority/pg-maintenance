@@ -27,7 +27,7 @@ services:
   pg-maintenance:
     build:
       context: ./
-      dockerfile: Dockerfile
+      dockerfile: Containerfile
     image: pg-maintenance
     container_name: pg-maintenance
     environment:
