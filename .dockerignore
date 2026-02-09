@@ -1,8 +1,7 @@
 *
 
-!cmd
-!internal
-!go.mod
-!go.sum
+!src
+!Cargo.lock
+!Cargo.toml
 !LICENSE
 !Makefile
