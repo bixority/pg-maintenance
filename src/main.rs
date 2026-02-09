@@ -116,7 +116,7 @@ fn parse_ssl_mode(mode: &str) -> Result<PgSslMode> {
 
 async fn with_timeout<F, T, E>(timeout: StdDuration, fut: F) -> Result<T>
 where
-    F: std::future::Future<Output = Result<T, E>>,
+    F: Future<Output = Result<T, E>>,
     E: Into<anyhow::Error>,
 {
     if timeout.as_secs() > 0 {
@@ -142,35 +142,44 @@ async fn cleanup_table(
 
     let cutoff = Utc::now() - Duration::days(config.days);
 
+    // Build SQL query once with identifiers (which must use format!)
+    // Then bind values using proper parameterization
+    let stmt = if batch_size > 0 {
+        format!(
+            r#"DELETE FROM "{table}"
+               WHERE ctid IN (
+                   SELECT ctid FROM "{table}"
+                   WHERE "{col}" < $1
+                   ORDER BY "{col}"
+                   LIMIT $2
+               )"#,
+            table = config.name,
+            col = config.timestamp_column
+        )
+    } else {
+        format!(
+            r#"DELETE FROM "{table}"
+               WHERE ctid IN (
+                   SELECT ctid FROM "{table}"
+                   WHERE "{col}" < $1
+                   ORDER BY "{col}"
+               )"#,
+            table = config.name,
+            col = config.timestamp_column
+        )
+    };
+
     loop {
         let mut tx = with_timeout(timeout, pool.begin()).await?;
 
-        let subquery = if batch_size > 0 {
-            format!(
-                "SELECT ctid FROM {} WHERE {} < $1 ORDER BY {} LIMIT $2",
-                config.name, config.timestamp_column, config.timestamp_column
-            )
+        // Build query with proper .bind() for values
+        let query = if batch_size > 0 {
+            sqlx::query(&stmt).bind(cutoff).bind(batch_size)
         } else {
-            format!(
-                "SELECT ctid FROM {} WHERE {} < $1 ORDER BY {}",
-                config.name, config.timestamp_column, config.timestamp_column
-            )
+            sqlx::query(&stmt).bind(cutoff)
         };
 
-        let query = format!("DELETE FROM {} WHERE ctid IN ({})", config.name, subquery);
-
-        let exec_fut = if batch_size > 0 {
-            sqlx::query(&query)
-                .bind(cutoff)
-                .bind(batch_size)
-                .execute(&mut *tx)
-        } else {
-            sqlx::query(&query)
-                .bind(cutoff)
-                .execute(&mut *tx)
-        };
-
-        let result = with_timeout(timeout, exec_fut).await;
+        let result = with_timeout(timeout, query.execute(&mut *tx)).await;
 
         match result {
             Ok(res) => {
@@ -179,7 +188,10 @@ async fn cleanup_table(
                 with_timeout(timeout, tx.commit()).await?;
 
                 if rows_affected == 0 {
-                    info!("No more rows to delete in table {}. Moving to next table.", config.name);
+                    info!(
+                        "No more rows to delete in table {}. Moving to next table.",
+                        config.name
+                    );
                     break;
                 }
 
