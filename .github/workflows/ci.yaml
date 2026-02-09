@@ -2,7 +2,7 @@ name: Build and push release
 
 on:
   release:
-    types: [published]
+    types: [ published ]
 
 permissions:
   contents: read
@@ -15,7 +15,49 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build: [ stable, beta, nightly, macos ]
+        include:
+          - build: stable
+            os: ubuntu-latest
+            rust: stable
+          - build: beta
+            os: ubuntu-latest
+            rust: beta
+          - build: nightly
+            os: ubuntu-latest
+            rust: nightly
+          - build: macos
+            os: macos-15
+            rust: stable
+    steps:
+      - uses: actions/checkout@master
+      - name: Install Rust (rustup)
+        run: rustup update ${{ matrix.rust }} --no-self-update && rustup default ${{ matrix.rust }}
+        shell: bash
+      - name: Run cargo test
+        run: cargo test
+
+  rustfmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Install Rust
+        run: rustup update stable && rustup default stable && rustup component add rustfmt clippy
+      - name: Rustfmt
+        run: cargo fmt -- --check
+      - name: Clippy
+        run: cargo clippy -- -D warnings -W clippy::pedantic
+
   prepare:
+    needs:
+      - test
+      - rustfmt
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -56,6 +98,7 @@ jobs:
             ${{ steps.set-outputs.outputs.image }}
           tags: |
             type=raw,value=${{ steps.extract_tag.outputs.tag }}
+    #            type=raw,value=latest
 
     outputs:
       image: ${{ steps.set-outputs.outputs.image }}
@@ -196,6 +239,7 @@ jobs:
         run: |
           docker buildx imagetools create $(jq -r '"-t " + (.tags | join(" -t "))' <<< '${{ needs.prepare.outputs.meta-json }}') \
             $(printf '${{ needs.prepare.outputs.image }}@sha256:%s ' *)
+      #          docker buildx imagetools create -t ${{ needs.prepare.outputs.image }}:latest $(printf '${{ needs.prepare.outputs.image }}@sha256:%s ' *)
 
       - name: Inspect image
         if: needs.prepare.outputs.push == 'true'

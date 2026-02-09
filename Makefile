@@ -1,20 +1,14 @@
-# Variables
-MODULE_NAME := github.com/bixority/pg_maintenance
-APP_NAME := pg_maintenance
-MAIN_FILE := ./cmd/main/main.go
-
-# Build settings
-GOFLAGS := -gcflags="all=-l" -ldflags="-s -w -extldflags '-static'"
-BUILD_DIR := ./bin
-OUTPUT := $(BUILD_DIR)/$(APP_NAME)
+RUST_TARGETARCH ?= x86_64
+TARGET_DIR := ./target
+OUTPUT := $(TARGET_DIR)/$(RUST_TARGETARCH)-unknown-linux-musl/release/pg-maintenance
 
 # Default target: build the application
 all: build
 
 # Build the static binary
 build:
-	mkdir -p $(BUILD_DIR)
-	CGO_ENABLED=0 go build $(GOFLAGS) -o $(OUTPUT) $(MAIN_FILE)
+	rustup target add $(RUST_TARGETARCH)-unknown-linux-musl
+	RUSTFLAGS='-C relocation-model=static -C strip=symbols' cargo build --release --target $(RUST_TARGETARCH)-unknown-linux-musl --target-dir $(TARGET_DIR)
 
 # Compress the binary with UPX
 compress: build
@@ -23,26 +17,14 @@ compress: build
 
 # Build and compress for release
 release: build compress
+	cp $(OUTPUT) $(TARGET_DIR)/
 
 # Run the application
 run: build
 	$(OUTPUT)
 
-# Test the application
-test:
-	go test ./...
-
-# Format code
-fmt:
-	go fmt ./...
-
-# Tidy up dependencies
-deps:
-	go mod tidy
-
-# Clean build artifacts
 clean:
-	rm -rf $(BUILD_DIR)
+	cargo clean
 
 # Display help
 help:
@@ -51,8 +33,4 @@ help:
 	@echo "  make build     Build the static binary"
 	@echo "  make compress  Compress the binary with UPX"
 	@echo "  make release   Build and compress the binary"
-	@echo "  make run       Build and run the application"
-	@echo "  make test      Run tests"
-	@echo "  make fmt       Format the code"
-	@echo "  make deps      Install and tidy dependencies"
 	@echo "  make clean     Remove build artifacts"

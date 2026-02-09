@@ -28,3 +28,8 @@ go.work.sum
 .env
 
 bin
+
+
+# Added by cargo
+
+/target
