@@ -1,4 +1,4 @@
-FROM --platform=$TARGETOS/$TARGETARCH rust:1.92-slim-trixie AS build-image
+FROM --platform=$TARGETOS/$TARGETARCH rust:1.93-slim-trixie AS build-image
 LABEL org.opencontainers.image.description="PostgreSQL maintenance tool"
 LABEL authors="Bixority SIA"
 
@@ -36,7 +36,7 @@ ARG TARGETARCH
 ARG TARGETOS
 
 WORKDIR /
-COPY --from=build-image /build/target/pg-maintenance /build/LICENSE /
+COPY --from=build-image /build/target/release/pg-maintenance /build/LICENSE /
 
 USER nonroot:nonroot
 
