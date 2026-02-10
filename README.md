@@ -17,8 +17,8 @@ Deletes rows from PostgreSQL table(s) that are older than N days, optionally in 
 ```shell
 export DB_USERNAME="dev"
 export DB_PASSWORD="dev"
-./target/release/pg-maintenance --host localhost --port 5432 --sslMode disable \
-  --dbName dev \
+./target/release/pg-maintenance --host localhost --port 5432 --ssl-mode disable \
+  --db-name dev \
   --table dev:created_at:365 --table dev2 --batch 100 --timeout 0s
 ```
 
@@ -26,8 +26,8 @@ export DB_PASSWORD="dev"
 
 - `--host`: Database host (default: `localhost`)
 - `--port`: Database port (default: `5432`)
-- `--sslMode`: SSL mode: `disable`, `require` (default), `verify-ca`, `verify-full`
-- `--dbName`: Database name (required)
+- `--ssl-mode`: SSL mode: `disable`, `require` (default), `verify-ca`, `verify-full`
+- `--db-name`: Database name (required)
 - `--table`: Table(s) in format `table[:timestampColumn=created_at[:days=0]]`, can be repeated
 - `--batch`: Optional batch size for cleanup (default: `0` means delete all matching rows in one transaction)
 - `--timeout`: Single DB operation timeout in seconds, e.g. `60s`, `0s` to disable
@@ -41,7 +41,7 @@ Environment variables:
 podman run --rm --network host \
   -e DB_USERNAME="dev" -e DB_PASSWORD="dev" \
   pg-maintenance:local /pg-maintenance --host localhost --port 5432 \
-  --sslMode disable --dbName dev --table dev:created_at:365 --table dev2 --batch 100 \
+  --ssl-mode disable --db-name dev --table dev:created_at:365 --table dev2 --batch 100 \
   --timeout 0s
 ```
 

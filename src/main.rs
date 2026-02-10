@@ -33,7 +33,7 @@ struct Args {
     tables: Vec<String>,
 
     /// Optional batch size for cleanup
-    #[arg(long, default_value_t = 0)]
+    #[arg(long, default_value_t = 1000)]
     batch: i64,
 
     /// Single db operation timeout in seconds

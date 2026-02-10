@@ -31,7 +31,7 @@ services:
       "/pg_maintenance",
       "--host", "${POSTGRES_HOST:-db}",
       "--port", "${POSTGRES_PORT:-5432}",
-      "--dbName", "${POSTGRES_DB:-dev}",
+      "--db-name", "${POSTGRES_DB:-dev}",
       "--table", "dev:created_at:10",
       "--table", "dev2::10",
       "--batch", "100",
