@@ -36,7 +36,7 @@ ARG TARGETARCH
 ARG TARGETOS
 
 WORKDIR /
-COPY --from=build-image /build/target/release/pg-maintenance /build/LICENSE /
+COPY --from=build-image /build/target/pg-maintenance /build/LICENSE /
 
 USER nonroot:nonroot
 
