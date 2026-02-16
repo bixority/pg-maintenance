@@ -1,6 +1,6 @@
 [package]
 name = "pg-maintenance"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2024"
 
 [dependencies]
@@ -10,7 +10,7 @@ clap = { version = "4.5.58", features = ["derive", "env"] }
 anyhow = "1.0.101"
 chrono = "0.4.43"
 log = "0.4.29"
-env_logger = "0.11.8"
+env_logger = "0.11.9"
 
 [profile.release]
 opt-level = 3
