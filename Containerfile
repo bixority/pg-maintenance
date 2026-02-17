@@ -2,7 +2,7 @@ FROM --platform=$TARGETOS/$TARGETARCH rust:1.93-slim-trixie AS build-image
 LABEL org.opencontainers.image.description="PostgreSQL maintenance tool"
 LABEL authors="Bixority SIA"
 
-ARG upx_version=5.0.2
+ARG upx_version=5.1.0
 ARG TARGETARCH
 ARG TARGETOS
 
