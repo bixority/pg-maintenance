@@ -1,11 +1,11 @@
 [package]
 name = "pg-maintenance"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2024"
 
 [dependencies]
 sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls", "postgres", "chrono"] }
-tokio = { version = "1.49.0", features = ["full"] }
+tokio = { version = "1.50.0", features = ["full"] }
 clap = { version = "4.5.60", features = ["derive", "env"] }
 anyhow = "1.0.102"
 chrono = "0.4.44"
