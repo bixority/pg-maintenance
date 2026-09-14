@@ -1,4 +1,4 @@
-FROM --platform=$TARGETOS/$TARGETARCH rust:1.93-slim-trixie AS build-image
+FROM --platform=$TARGETOS/$TARGETARCH rust:1.98.1-slim-trixie AS build-image
 LABEL org.opencontainers.image.description="PostgreSQL maintenance tool"
 LABEL authors="Bixority SIA"
 
@@ -27,7 +27,7 @@ RUN echo "Target architecture is: ${TARGETARCH}" && \
         echo "Unsupported architecture: ${TARGETARCH}"; exit 1; \
     fi
 
-FROM --platform=$TARGETOS/$TARGETARCH gcr.io/distroless/static-debian12:nonroot
+FROM --platform=$TARGETOS/$TARGETARCH gcr.io/distroless/static-debian13:nonroot
 
 LABEL org.opencontainers.image.description="PostgreSQL maintenance tool"
 LABEL authors="Bixority SIA"
